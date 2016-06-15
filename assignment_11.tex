@@ -14,14 +14,15 @@
 \section{Answer the following questions:}
 \begin{itemize}
 	\item What is a strategy ?\\
-	
+	A strategy defines for a player "max" a set of actions, which are influenced by the move of an opponent "min" after each round. The strategy of a player shows all states available after each round, based on the possible move of the opponent. 
 	\item What is the goal of Max agent?\\
 	
 	\item What is the goal of Min agent?\\
-	
+	The goal of Min agent is the opposite of the goal of Max agent. The utility value of the goal state for the Min agent is the smallest possible value, which leads in a terminal test to a terminal state and a win for the described agent.
 	\item What is the Minimax Theorem?\\
 	
 	\item How do we construct a strategy for Max?\\
+	Assuming that Max agent moves first, the best move at root will be the one, which leads to the state with the highest minimax value. For the second move, all possible answers of the oppenent have to be considered and the worst-case move expected. In the following move it is the turn of Max agent again and the move, which leads to the state with the highest minimax value is the favorite one. After that the last two actions are performed alternately until the goal state is reached.
 	
 	\item How do we construct a strategy for Min?\\
 	
@@ -30,10 +31,12 @@
 	\item How does the Minimax algorithm work ?\\
 	
 	\item Is the Minimax algorithm affordable for chess? Why?\\
+	The Minimax algorithm is not affordable for chess, because it performs a complete depth-first exploration of all possible states of the game. In case of chess there are 10⁴⁰ possible states, which is totally impractical.
 	
 	\item What is alpha-beta pruning?\\
 	
 	\item Is the alpha-beta pruning method affordable for chess? Why?\\
+	The alpha-beta pruning method is affordable for chess. The method is able to explore the same amount of states at least two times as fast as minimax algorithm. In addition dynamic move-ordering schemes help to chose the next move more efficient. To avoid transpositions, the use of transposition tables is recommended and also leads to improvements. 
 	
 \end{itemize}
 
