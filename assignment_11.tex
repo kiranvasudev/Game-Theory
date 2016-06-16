@@ -16,22 +16,29 @@
 	\item What is a strategy ?\\
 	
 	\item What is the goal of Max agent?\\
+	The max agent chooses the best move from a choice of different moves.
 	
 	\item What is the goal of Min agent?\\
 	
 	\item What is the Minimax Theorem?\\
+	Minimax theorem is a theorem that assumes that each player plays an optimal move until the end of the game. The game can be a "zero-sum game" if no player is the winner at the end of the game.
 	
 	\item How do we construct a strategy for Max?\\
 	
 	\item How do we construct a strategy for Min?\\
+	MIN will act in such a way where it takes the minimum value of all actions it can perform.
 	
 	\item How do we find the best strategy ?\\
 	
 	\item How does the Minimax algorithm work ?\\
+	In the minimax algorithm, there are two players - MIN and MAX. If MAX is the root node, it takes the optimal option from all its options. The most optimal solution for MAX will be the maximum value of a new state from an option of all states. Now the next player plays its turn(MIN). MIN plays its optimal option from all the options available to MIN. MIN's optimal solution is the minimum value of a new state	from all the possible states.
+	
 	
 	\item Is the Minimax algorithm affordable for chess? Why?\\
 	
 	\item What is alpha-beta pruning?\\
+	Alpha Beta Pruning removes the drawback of minimax algorithm. The drawback being, the number of game states the algorithm has to examine.\\
+	Alpha Beta Pruning computes the correct minimax choice without examining all the game states aka pruning the unwanted game states.
 	
 	\item Is the alpha-beta pruning method affordable for chess? Why?\\
 	
