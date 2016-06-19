@@ -24,7 +24,7 @@
 
 Environment::Environment() :
 		puzzle(NUM_ROWS, std::vector<std::string>(NUM_COLS, ".")), num_tiles(
-				NUM_ROWS * NUM_COLS), player1_symbol("X"), player2_symbol("O"), player1_agent(
+		NUM_ROWS * NUM_COLS), player1_symbol("X"), player2_symbol("O"), player1_agent(
 				player1_symbol, player2_symbol), player2_agent(player2_symbol,
 				player1_symbol), player1_agent_on(true), player2_agent_on(true), player1_agent_method(
 				minimax), player2_agent_method(alpa_beta) {
@@ -159,7 +159,7 @@ bool Environment::make_move(Player player) {
 				std::cout << "Player 2 is computing next choice (alpha_beta)"
 						<< std::endl;
 				col = player2_agent.alpha_betha(puzzle, num_tiles, INT_MIN,
-						INT_MAX).first;
+				INT_MAX).first;
 			}
 		}
 	}
@@ -177,8 +177,10 @@ bool Environment::make_move(Player player) {
 bool Environment::check_win(Player player) {
 	int counter;
 
+	// reminde: num_tiles is the amount of remaining tiles
+
 	std::string player_symbol;
-	
+
 	// There can be a soultion after at least seven moves.
 	if (NUM_ROWS * NUM_COLS - 7 >= num_tiles) {
 
@@ -188,78 +190,90 @@ bool Environment::check_win(Player player) {
 			player_symbol = player2_symbol;
 		}
 
-		// Check if there are four in a row.
-		for (int row = 0; row < NUM_ROWS; ++row) {
-			counter = 0;
+		counter = 0;
+		for (int row = NUM_ROWS - 1; row >= 0; --row) {
 			for (int col = 0; col < NUM_COLS; ++col) {
 				if (puzzle[row][col] == player_symbol) {
 					counter += 1;
-					if (counter >= 4) {
-						return true;
-					}
 				} else {
-					if (puzzle[row][col] == "."
-							&& puzzle[row][col] != player_symbol)
-						counter = 0;
+					counter = 0;
+				}
+
+				if (counter == 4) {
+					return true;
 				}
 			}
-
+			counter = 0;
 		}
 
-		// Check if there are four in a column.
+		counter = 0;
 		for (int col = 0; col < NUM_COLS; ++col) {
-			counter = 0;
-			for (int row = 0; row < NUM_ROWS; ++row) {
+			for (int row = NUM_ROWS - 1; row >= 0; --row) {
 				if (puzzle[row][col] == player_symbol) {
 					counter += 1;
-					if (counter == 4) {
-						return true;
-					}
 				} else {
-					if (puzzle[row][col] != player_symbol) {
-						counter = 0;
-					}
+					counter = 0;
+				}
+
+				if (counter == 4) {
+					return true;
 				}
 			}
+			counter = 0;
 		}
 
-		// Four tiles in diagonal are at least possible after 11 moves.
 		if (NUM_ROWS * NUM_COLS - 11 >= num_tiles) {
-			// Check if there are four in diagonal.
-			for (int row = 0; row < NUM_ROWS; ++row) {
+			counter = 0;
+			for (int row = NUM_ROWS - 1; row >= 0; --row) {
 				for (int col = 0; col < NUM_COLS; ++col) {
 					if (puzzle[row][col] == player_symbol) {
-						// First check diagonal going to the left.
-						for (int diag = 1; diag < 5; ++diag) {
-							if (row + diag < NUM_ROWS || col - diag < 0) {
-								if (puzzle[row + diag][col - diag]
+						counter += 1;
+						for (int diag = 1; diag < 4; ++diag) {
+							if (row - diag >= 0 && col - diag >= 0) {
+								if (puzzle[row - diag][col - diag]
 										== player_symbol) {
 									counter += 1;
-									if (counter == 4) {
-										return true;
-									} else {
-										break;
-									}
+								} else {
+									break;
 								}
-							}
-						}
 
-						// Otherwise check the diagonal going to the right.
-						counter = 0;
-						for (int diag = 1; diag < 5; ++diag) {
-							if (row + diag < NUM_ROWS || col + diag < NUM_COLS) {
-								if (puzzle[row + diag][col - diag]
-										== player_symbol) {
-									counter += 1;
-									if (counter == 4) {
-										return true;
-									} else {
-										break;
-									}
+								if (counter == 4) {
+									return true;
 								}
+							} else {
+								counter = 0;
+								break;
 							}
 						}
 					}
+					counter = 0;
+				}
+			}
+
+			counter = 0;
+			for (int row = NUM_ROWS - 1; row >= 0; --row) {
+				for (int col = 0; col < NUM_COLS; ++col) {
+					if (puzzle[row][col] == player_symbol) {
+						counter += 1;
+						for (int diag = 1; diag < 4; ++diag) {
+							if (row - diag >= 0 && col + diag < NUM_COLS) {
+								if (puzzle[row - diag][col + diag]
+										== player_symbol) {
+									counter += 1;
+								} else {
+									break;
+								}
+
+								if (counter == 4) {
+									return true;
+								}
+							} else {
+								counter = 0;
+								break;
+							}
+						}
+					}
+					counter = 0;
 				}
 			}
 		}
