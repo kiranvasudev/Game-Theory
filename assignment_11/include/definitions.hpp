@@ -14,6 +14,6 @@
 typedef std::vector<std::vector<std::string> > Puzzle;
 #define NUM_ROWS 7
 #define NUM_COLS 7
-#define MINIMAX_MAX_DEPTH 5
+#define MINIMAX_MAX_DEPTH 6
 #define ALPHABETA_MAX_DEPTH 6 /*8 is better*/
 #endif

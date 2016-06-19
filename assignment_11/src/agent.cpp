@@ -46,7 +46,8 @@ std::pair<int, int> Agent::minimax(Puzzle puzzle, int free_tiles) {
 }
 
 //max returns the pair that holds the <col, utility_value> of the selected move
-std::pair<int, int> Agent::max(Puzzle puzzle, int free_tiles, int input_col, int depth) {
+std::pair<int, int> Agent::max(Puzzle puzzle, int free_tiles, int input_col,
+		int depth) {
 
 	std::pair<int, int> max_pair;
 	int max_uv = 0;
@@ -91,7 +92,8 @@ std::pair<int, int> Agent::max(Puzzle puzzle, int free_tiles, int input_col, int
 }
 
 //min returns the pair that holds the <col, utility_value> of the selected move
-std::pair<int, int> Agent::min(Puzzle puzzle, int free_tiles, int input_col, int depth) {
+std::pair<int, int> Agent::min(Puzzle puzzle, int free_tiles, int input_col,
+		int depth) {
 
 	std::pair<int, int> min_pair;
 	int min_uv = 0;
@@ -136,20 +138,7 @@ std::pair<int, int> Agent::min(Puzzle puzzle, int free_tiles, int input_col, int
 
 int Agent::get_free_pos(Puzzle puzzle, int col) {
 	int counter = 0;
-//	for (int row = 0; row < NUM_ROWS; ++row) {
-//		if (puzzle[row][col] != ".") {
-//			counter += 1;
-//		}
-//	}
-//
-//	// In case that the column is already full, return a -1.
-//	if (counter == NUM_ROWS - 1) {
-//		return -1;
-//
-//		// Otherwise return number of row, where to insert symbol.
-//	} else {
-//		return counter;
-//	}
+
 	int last_row = NUM_ROWS - 1;
 	for (int row = last_row; row >= 0; --row) {
 		if (puzzle[row][col] != ".") {
@@ -194,29 +183,120 @@ std::pair<int, int> Agent::min_alpha_betha(Puzzle puzzle, int free_tiles,
  */
 int Agent::utility(Puzzle puzzle, int free_tiles, std::string player_symbol) {
 
-	int utility_value = 138;
+	int utility_value = 0;
 
-	int evaluation_table[NUM_ROWS][NUM_COLS] = { { 3, 4, 5, 7, 5, 4, 3 }, { 4,
-			6, 8, 10, 8, 6, 4 }, { 5, 8, 11, 13, 11, 8, 5 }, { 6, 9, 12, 14, 12, 9, 6 }, { 5, 8, 11, 13, 11,
-			8, 5 }, { 4, 6, 8, 10, 8, 6, 4 }, { 3, 4, 5, 7, 5, 4, 3 } };
+	int counter_max = 0;
+	int counter_min = 0;
+	int counter_free_tile = 0;
 
-	for (int row = 0; row < NUM_ROWS; ++row) {
-		for (int col = 0; col < NUM_COLS; ++col) {
+	for (int col = 0; col < NUM_COLS; ++col) {
+		counter_max = 0;
+		counter_min = 0;
+		counter_free_tile = 0;
+
+		for (int row = NUM_ROWS - 1; row >= 0; --row) {
 			if (puzzle[row][col] == "X") {
-				utility_value += evaluation_table[row][col];
+				counter_min = 0;
+				counter_max += 1;
 			}
 			if (puzzle[row][col] == "O") {
-				utility_value -= evaluation_table[row][col];
+				counter_max = 0;
+				counter_min += -1;
 			}
+			if (puzzle[row][col] == ".") {
+				counter_free_tile += 1;
+			}
+		}
+
+		if (counter_max != 0 && counter_free_tile + counter_max >= 4) {
+			if (counter_max == 4) {
+				return 1000;
+			}
+			utility_value += pow(2, counter_max);
+		}
+
+		if (counter_min != 0 && counter_free_tile + counter_min >= 4) {
+			if (counter_min == 4) {
+				return -1000;
+			}
+			utility_value -= pow(2, counter_min);
 		}
 	}
 
-	bool game_over = check_winning(puzzle, free_tiles, player_symbol);
-	if (game_over) {
-		if (player_symbol == "O") {
-			utility_value = -(1000 + free_tiles);
-		} else {
-			utility_value = 1000 + free_tiles;
+	counter_max = 0;
+	counter_min = 0;
+
+	int prev_free_tile = 0;
+	int after_free_tile = 0;
+
+	for (int row = NUM_ROWS - 1; row >= 0; --row) {
+		for (int col = 0; col < NUM_COLS; ++col) {
+			if (puzzle[row][col] == "." && counter_max == 0
+					&& counter_min == 0) {
+				prev_free_tile += 1;
+				continue;
+			}
+
+			if (puzzle[row][col] == "X" && counter_min == 0) {
+				counter_max += 1;
+				continue;
+			}
+
+			if (puzzle[row][col] == "O" && counter_max == 0) {
+				counter_min += 1;
+				continue;
+			}
+
+			if (puzzle[row][col] == "."
+					&& (counter_max != 0 || counter_min != 0)) {
+				after_free_tile += 1;
+				continue;
+			}
+
+			if (puzzle[row][col] == "X" && counter_min != 0) {
+				if (prev_free_tile + counter_min + after_free_tile >= 4) {
+					if (counter_min == 4) {
+						return -1000;
+					}
+					utility_value -= pow(2, counter_min);
+				}
+
+				counter_max += 1;
+
+				counter_min = 0;
+				prev_free_tile = after_free_tile;
+				after_free_tile = 0;
+				continue;
+			}
+
+			if (puzzle[row][col] == "O" && counter_max != 0) {
+				if (prev_free_tile + counter_max + after_free_tile >= 4) {
+					if (counter_max == 4) {
+						return 1000;
+					}
+					utility_value += pow(2, counter_max);
+				}
+
+				counter_min += 1;
+
+				counter_max = 0;
+				prev_free_tile = after_free_tile;
+				after_free_tile = 0;
+			}
+		}
+
+		if (counter_max != 0 && (prev_free_tile + counter_max + after_free_tile) >= 4) {
+			if (counter_max == 4) {
+				return 1000;
+			}
+			utility_value += pow(2, counter_max);
+		}
+
+		if (counter_min != 0 && (prev_free_tile + counter_min + after_free_tile) >= 4) {
+			if (counter_min == 4) {
+				return -1000;
+			}
+			utility_value -= pow(2, counter_min);
 		}
 	}
 
@@ -275,7 +355,7 @@ bool Agent::check_winning(Puzzle puzzle, int free_tiles,
 						counter = 0;
 						// First check diagonal going to the left.
 						for (int diag = 1; diag < 4; ++diag) {
-							if (row - diag >= 0  && col - diag >= 0) {
+							if (row - diag >= 0 && col - diag >= 0) {
 								if (puzzle[row - diag][col - diag]
 										== player_symbol) {
 									counter += 1;
