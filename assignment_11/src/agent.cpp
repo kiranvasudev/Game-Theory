@@ -73,6 +73,9 @@ std::pair<int, int> Agent::max(Puzzle puzzle, int free_tiles, int input_col, int
 
 		depth += 1;
 		max_pair = min(puzzle, free_tiles, col, depth);
+		if (col == 0) {
+			max_uv = max_pair.second;
+		}
 		if (max_pair.second > max_uv) {
 			max_uv = max_pair.second;
 			max_col = col;
@@ -114,6 +117,9 @@ std::pair<int, int> Agent::min(Puzzle puzzle, int free_tiles, int input_col, int
 
 		depth += 1;
 		min_pair = max(puzzle, free_tiles, col, depth);
+		if (col == 0) {
+			min_uv = min_pair.second;
+		}
 		if (min_pair.second < min_uv) {
 			min_uv = min_pair.second;
 			min_col = col;
