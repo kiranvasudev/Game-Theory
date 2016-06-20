@@ -58,7 +58,7 @@ std::pair<int, int> Agent::max(Puzzle puzzle, int free_tiles, int input_col,
 		return std::make_pair(input_col, current_utility_value);
 	}
 
-	if (current_utility_value >= 1000 || current_utility_value <= -1000) {
+	if (current_utility_value >= 10000 || current_utility_value <= -10000) {
 		return std::make_pair(input_col, current_utility_value);
 	}
 
@@ -104,7 +104,7 @@ std::pair<int, int> Agent::min(Puzzle puzzle, int free_tiles, int input_col,
 		return std::make_pair(input_col, current_utility_value);
 	}
 
-	if (current_utility_value > 1000 || current_utility_value < -1000) {
+	if (current_utility_value >= 10000 || current_utility_value <= -10000) {
 		return std::make_pair(input_col, current_utility_value);
 	}
 
@@ -137,24 +137,15 @@ std::pair<int, int> Agent::min(Puzzle puzzle, int free_tiles, int input_col,
 }
 
 int Agent::get_free_pos(Puzzle puzzle, int col) {
-	int counter = 0;
 
 	int last_row = NUM_ROWS - 1;
 	for (int row = last_row; row >= 0; --row) {
-		if (puzzle[row][col] != ".") {
-			counter += 1;
-		} else {
-			return last_row - counter;
+			if (puzzle[row][col] == ".") {
+				return row;
+			}
 		}
-	}
-	// In case that the column is already full, return a -1.
-	if (counter == NUM_ROWS) {
-		return -1;
 
-		// Otherwise return number of row, where to insert symbol.
-	} else {
-		return counter;
-	}
+	return -1;
 }
 
 //alpha_beta returns the pair that holds the <col, utility_value> of the selected move
@@ -210,14 +201,14 @@ int Agent::utility(Puzzle puzzle, int free_tiles, std::string player_symbol) {
 
 		if (counter_max != 0 && counter_free_tile + counter_max >= 4) {
 			if (counter_max == 4) {
-				return 1000;
+				return 10000;
 			}
 			utility_value += pow(2, counter_max);
 		}
 
 		if (counter_min != 0 && counter_free_tile + counter_min >= 4) {
 			if (counter_min == 4) {
-				return -1000;
+				return -10000;
 			}
 			utility_value -= pow(2, counter_min);
 		}
@@ -256,7 +247,7 @@ int Agent::utility(Puzzle puzzle, int free_tiles, std::string player_symbol) {
 			if (puzzle[row][col] == "X" && counter_min != 0) {
 				if (prev_free_tile + counter_min + after_free_tile >= 4) {
 					if (counter_min == 4) {
-						return -1000;
+						return -10000;
 					}
 					utility_value -= pow(2, counter_min);
 				}
@@ -272,7 +263,7 @@ int Agent::utility(Puzzle puzzle, int free_tiles, std::string player_symbol) {
 			if (puzzle[row][col] == "O" && counter_max != 0) {
 				if (prev_free_tile + counter_max + after_free_tile >= 4) {
 					if (counter_max == 4) {
-						return 1000;
+						return 10000;
 					}
 					utility_value += pow(2, counter_max);
 				}
@@ -285,109 +276,248 @@ int Agent::utility(Puzzle puzzle, int free_tiles, std::string player_symbol) {
 			}
 		}
 
-		if (counter_max != 0 && (prev_free_tile + counter_max + after_free_tile) >= 4) {
+		if (counter_max != 0
+				&& (prev_free_tile + counter_max + after_free_tile) >= 4) {
 			if (counter_max == 4) {
-				return 1000;
+				return 10000;
 			}
 			utility_value += pow(2, counter_max);
 		}
 
-		if (counter_min != 0 && (prev_free_tile + counter_min + after_free_tile) >= 4) {
+		if (counter_min != 0
+				&& (prev_free_tile + counter_min + after_free_tile) >= 4) {
 			if (counter_min == 4) {
-				return -1000;
+				return -10000;
 			}
 			utility_value -= pow(2, counter_min);
 		}
 	}
 
-	return utility_value;
-}
+	// From right to left diagonal.
+	int last_row = NUM_ROWS - 1;
+	int limit = 7;
 
-bool Agent::check_winning(Puzzle puzzle, int free_tiles,
-		std::string player_symbol) {
-
-	int counter;
-
-	// There can be a soultion after at least seven moves.
-	if (7 <= NUM_ROWS * NUM_COLS - free_tiles) {
-
-		// Check if there are four in a row.
-		for (int row = 0; row < NUM_ROWS; ++row) {
-			counter = 0;
-			for (int col = 0; col < NUM_COLS; ++col) {
-				if (puzzle[row][col] == player_symbol) {
-					counter += 1;
-					if (counter >= 4) {
-						return true;
-					}
-				} else {
-					if (puzzle[row][col] == "."
-							&& puzzle[row][col] != player_symbol)
-						counter = 0;
-				}
+	for (int col = NUM_COLS - 1; col >= 3; --col) {
+		counter_max = 0;
+		counter_min = 0;
+		counter_free_tile = 0;
+		for (int diag = 0; diag < limit; ++diag) {
+			if (puzzle[last_row - diag][col - diag] == "X") {
+				counter_min = 0;
+				counter_max += 1;
 			}
 
-		}
+			if (puzzle[last_row - diag][col - diag] == "O") {
+				counter_max = 0;
+				counter_min = 1;
+			}
 
-		// Check if there are four in a column.
-		for (int col = 0; col < NUM_COLS; ++col) {
-			counter = 0;
-			for (int row = 0; row < NUM_ROWS; ++row) {
-				if (puzzle[row][col] == player_symbol) {
-					counter += 1;
-					if (counter == 4) {
-						return true;
-					}
-				} else {
-					if (puzzle[row][col] != player_symbol) {
-						counter = 0;
-					}
-				}
+			if (puzzle[last_row - diag][col - diag] == ".") {
+				counter_free_tile += 1;
 			}
 		}
 
-		// Four tiles in diagonal are at least possible after 11 moves.
-		if (11 <= NUM_ROWS * NUM_COLS - free_tiles) {
-			// Check if there are four in diagonal.
-			for (int row = NUM_ROWS - 1; row >= 0; --row) {
-				for (int col = 0; col < NUM_COLS; ++col) {
-					if (puzzle[row][col] == player_symbol) {
-						counter = 0;
-						// First check diagonal going to the left.
-						for (int diag = 1; diag < 4; ++diag) {
-							if (row - diag >= 0 && col - diag >= 0) {
-								if (puzzle[row - diag][col - diag]
-										== player_symbol) {
-									counter += 1;
-									if (counter == 3) {
-										return true;
-									} else {
-										break;
-									}
-								}
-							}
-						}
-
-						// Otherwise check the diagonal going to the right.
-						counter = 0;
-						for (int diag = 1; diag < 4; ++diag) {
-							if (row - diag >= 0 && col + diag < NUM_COLS) {
-								if (puzzle[row - diag][col + diag]
-										== player_symbol) {
-									counter += 1;
-									if (counter == 3) {
-										return true;
-									} else {
-										break;
-									}
-								}
-							}
-						}
-					}
-				}
+		if (counter_max != 0 && counter_max + counter_free_tile >= 4) {
+			if (counter_max >= 4) {
+				return 10000;
 			}
+			utility_value += pow(2, counter_max);
 		}
+
+		if (counter_min != 0 && counter_min + counter_free_tile >= 4) {
+			if (counter_min >= 4) {
+				return -10000;
+			}
+			utility_value -= pow(2, counter_min);
+		}
+		limit -= 1;
 	}
-	return false;
-}
 
+	int last_column = NUM_COLS - 1;
+	limit = 6;
+
+	for (int row = NUM_ROWS - 2; row >= 3; --row) {
+		counter_max = 0;
+		counter_min = 0;
+		counter_free_tile = 0;
+		for (int diag = 0; diag < limit; ++diag) {
+			if (puzzle[row - diag][last_column - diag] == "X") {
+				counter_min = 0;
+				counter_max += 1;
+			}
+
+			if (puzzle[row - diag][last_column - diag] == "O") {
+				counter_max = 0;
+				counter_min = 1;
+			}
+
+			if (puzzle[row - diag][last_column - diag] == ".") {
+				counter_free_tile += 1;
+			}
+		}
+
+		if (counter_max != 0 && counter_max + counter_free_tile >= 4) {
+			if (counter_max >= 4) {
+				return 10000;
+			}
+			utility_value += pow(2, counter_max);
+		}
+
+		if (counter_min != 0 && counter_min + counter_free_tile >= 4) {
+			if (counter_min >= 4) {
+				return -10000;
+			}
+			utility_value -= pow(2, counter_min);
+		}
+		limit -= 1;
+	}
+
+	// From left to right diagonal.
+	limit = 7;
+
+	for (int col = 0; col < 4; ++col) {
+		counter_max = 0;
+		counter_min = 0;
+		counter_free_tile = 0;
+		for (int diag = 0; diag < limit; ++diag) {
+			if (puzzle[last_row - diag][col + diag] == "X") {
+				counter_min = 0;
+				counter_max += 1;
+			}
+
+			if (puzzle[last_row - diag][col + diag] == "O") {
+				counter_max = 0;
+				counter_min = 1;
+			}
+
+			if (puzzle[last_row - diag][col + diag] == ".") {
+				counter_free_tile += 1;
+			}
+		}
+
+		if (counter_max != 0 && counter_max + counter_free_tile >= 4) {
+			if (counter_max >= 4) {
+				return 10000;
+			}
+			utility_value += pow(2, counter_max);
+		}
+
+		if (counter_min != 0 && counter_min + counter_free_tile >= 4) {
+			if (counter_min >= 4) {
+				return -10000;
+			}
+			utility_value -= pow(2, counter_min);
+		}
+		limit -= 1;
+	}
+
+	int first_column = 0;
+	limit = 6;
+
+	for (int row = NUM_ROWS - 2; row >= 3; --row) {
+		counter_max = 0;
+		counter_min = 0;
+		counter_free_tile = 0;
+		for (int diag = 0; diag < limit; ++diag) {
+			if (puzzle[row - diag][first_column + diag] == "X") {
+				counter_min = 0;
+				counter_max += 1;
+			}
+
+			if (puzzle[row - diag][first_column + diag] == "O") {
+				counter_max = 0;
+				counter_min = 1;
+			}
+
+			if (puzzle[row - diag][first_column + diag] == ".") {
+				counter_free_tile += 1;
+			}
+		}
+
+		if (counter_max != 0 && counter_max + counter_free_tile >= 4) {
+			if (counter_max >= 4) {
+				return 10000;
+			}
+			utility_value += pow(2, counter_max);
+		}
+
+		if (counter_min != 0 && counter_min + counter_free_tile >= 4) {
+			if (counter_min >= 4) {
+				return -10000;
+			}
+			utility_value -= pow(2, counter_min);
+		}
+		limit -= 1;
+	}
+
+//	counter_max = 0;
+//	counter_min = 0;
+//
+//	// From right to left.
+//	for (int row = NUM_ROWS - 1; row >= 3; --row) {
+//		for (int col = NUM_COLS - 1; col >= 3; --col) {
+//			if (puzzle[row][col] == "X") {
+//				if ((row == NUM_ROWS - 1 || col == NUM_COLS - 1)
+//						|| ((row != NUM_ROWS - 1 || col != NUM_COLS - 1)
+//								&& puzzle[row - 1][col - 1] != "X")) {
+//					counter_max += 1;
+//					for (int diag = 1; diag < 4; ++diag) {
+//						if (puzzle[row - diag][col - diag] == "X") {
+//							counter_max += 1;
+//						}
+//
+//						if (puzzle[row - diag][col - diag] == ".") {
+//							break;
+//						}
+//
+//						if (puzzle[row - diag][col - diag] == "O") {
+//							counter_max = 0;
+//							break;
+//						}
+//					}
+//				} else {
+//					continue;
+//				}
+//			}
+//
+//			if (puzzle[row][col] == "O") {
+//				if ((row == NUM_ROWS - 1 || col == NUM_COLS - 1)
+//						|| ((row != NUM_ROWS - 1 || col != NUM_COLS - 1)
+//								&& puzzle[row - 1][col - 1] != "O")) {
+//					counter_min += 1;
+//					for (int diag = 1; diag < 4; ++diag) {
+//						if (puzzle[row - diag][col - diag] == "O") {
+//							counter_min += 1;
+//						}
+//						if (puzzle[row - diag][col - diag] == ".") {
+//							break;
+//						}
+//
+//						if (puzzle[row - diag][col - diag] == "X") {
+//							counter_min = 0;
+//							break;
+//						}
+//					}
+//				}
+//			}
+//		}
+//		if (counter_min != 0 && counter_max == 0) {
+//			if (counter_max == 4) {
+//				return 1000;
+//			}0
+//
+//			utility_value -= pow(2, counter_min);
+//			counter_min = 0;
+//		}
+//		if (counter_max != 0 && counter_min == 0) {
+//			if (counter_min == 4) {
+//				return -1000;
+//			}
+//			utility_value += pow(2, counter_max);
+//			counter_max = 0;
+//		}
+//	}
+
+	return utility_value;
+
+}
