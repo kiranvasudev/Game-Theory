@@ -142,7 +142,10 @@ bool Environment::make_move(Player player) {
 		if (player1_agent_on) {
 			std::cout << "Player 1 is computing next choice (minimax)  "
 					<< std::endl;
-			col = player1_agent.minimax(puzzle, num_tiles).first;
+			std::pair<int, int> result = player1_agent.minimax(puzzle,
+					num_tiles);
+			cout << "UT: " << result.second << std::endl;
+			col = result.first;
 		} else {
 			std::cout << "Next move (0-" << NUM_COLS - 1 << "): " << std::endl;
 			std::cin >> col;
@@ -154,7 +157,10 @@ bool Environment::make_move(Player player) {
 			if (player2_agent_method == minimax) {
 				std::cout << "Player 2 is computing next choice (minimax) "
 						<< std::endl;
-				col = player2_agent.minimax(puzzle, num_tiles).first;
+				std::pair<int, int> result = player1_agent.minimax(puzzle,
+						num_tiles);
+				cout << "UT: " << result.second << std::endl;
+				col = result.first;
 			} else if (player2_agent_method == alpa_beta) {
 				std::cout << "Player 2 is computing next choice (alpha_beta)"
 						<< std::endl;
