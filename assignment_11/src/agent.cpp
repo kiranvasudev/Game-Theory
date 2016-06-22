@@ -447,7 +447,7 @@ int Agent::utility(Puzzle puzzle, int free_tiles, std::string player_symbol) {
 		limit -= 1;
 	}
 
-	// check top right corner
+	// check top right corner.
 	int first_col = 0;
 	limit = 6;
 	for (int row = last_row; row >= 3; --row) {
