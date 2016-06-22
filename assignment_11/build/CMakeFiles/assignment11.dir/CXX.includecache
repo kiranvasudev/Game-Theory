@@ -34,27 +34,11 @@ vector
 string
 -
 
-/home/patrickna/Autonomous_Systems/first_semester/Artificial_Intelligence_for_Robotics/homework/011_assignment_14.06.2016/Game-Theory/assignment_11/src/agent.cpp
-agent.hpp
--
-climits
--
-cmath
--
-utility
--
-
 /home/patrickna/Autonomous_Systems/first_semester/Artificial_Intelligence_for_Robotics/homework/011_assignment_14.06.2016/Game-Theory/assignment_11/src/env.cpp
 env.hpp
 -
 iostream
 -
 climits
--
-
-/home/patrickna/Autonomous_Systems/first_semester/Artificial_Intelligence_for_Robotics/homework/011_assignment_14.06.2016/Game-Theory/assignment_11/src/main.cpp
-iostream
--
-env.hpp
 -
 
