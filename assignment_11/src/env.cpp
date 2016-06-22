@@ -229,59 +229,7 @@ bool Environment::check_win(Player player) {
 		}
 
 		if (NUM_ROWS * NUM_COLS - 11 >= num_tiles) {
-//			counter = 0;
-//			for (int row = NUM_ROWS - 1; row >= 0; --row) {
-//				for (int col = 0; col < NUM_COLS; ++col) {
-//					if (puzzle[row][col] == player_symbol) {
-//						counter += 1;
-//						for (int diag = 1; diag < 4; ++diag) {
-//							if (row - diag >= 0 && col - diag >= 0) {
-//								if (puzzle[row - diag][col - diag]
-//										== player_symbol) {
-//									counter += 1;
-//								} else {
-//									break;
-//								}
-//
-//								if (counter == 4) {
-//									return true;
-//								}
-//							} else {
-//								counter = 0;
-//								break;
-//							}
-//						}
-//					}
-//					counter = 0;
-//				}
-//			}
-//
-//			counter = 0;
-//			for (int row = NUM_ROWS - 1; row >= 0; --row) {
-//				for (int col = 0; col < NUM_COLS; ++col) {
-//					if (puzzle[row][col] == player_symbol) {
-//						counter += 1;
-//						for (int diag = 1; diag < 4; ++diag) {
-//							if (row - diag >= 0 && col + diag < NUM_COLS) {
-//								if (puzzle[row - diag][col + diag]
-//										== player_symbol) {
-//									counter += 1;
-//								} else {
-//									break;
-//								}
-//
-//								if (counter == 4) {
-//									return true;
-//								}
-//							} else {
-//								counter = 0;
-//								break;
-//							}
-//						}
-//					}
-//					counter = 0;
-//				}
-//			}
+
 			// check diagonal
 			int counter_max = 0;
 			int counter_min = 0;
