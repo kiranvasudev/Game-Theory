@@ -11,8 +11,8 @@
 #include <string>
 
 /*
- * Max_symbol: The simbol used by the agent Max
- * Min_symbol: The simbos used be the agent Min
+ * Max_symbol: The symbol used by the agent Max
+ * Min_symbol: The symbol used be the agent Min
  * */
 Agent::Agent(std::string max_symbol, std::string min_symbol) :
 		max_symbol(max_symbol), min_symbol(min_symbol), total_tiles(
@@ -57,7 +57,7 @@ std::pair<int, int> Agent::max(Puzzle puzzle, int free_tiles, int input_col,
 	if (free_tiles == 0) {
 		return std::make_pair(input_col, current_utility_value);
 	}
-
+	//winning condition
 	if (current_utility_value == 10000 || current_utility_value == -10000) {
 		return std::make_pair(input_col, current_utility_value);
 	}
@@ -70,6 +70,7 @@ std::pair<int, int> Agent::max(Puzzle puzzle, int free_tiles, int input_col,
 
 		int pos = get_free_pos(puzzle, col);
 		if (pos == -1) {
+			full_col = 1;
 			continue;
 		}
 
@@ -77,17 +78,20 @@ std::pair<int, int> Agent::max(Puzzle puzzle, int free_tiles, int input_col,
 		free_tiles -= 1;
 
 		depth += 1;
+
 		max_pair = min(puzzle, free_tiles, col, depth);
+
 		if (max_pair.second == 10000) {
 			max_pair.first = col;
 			return max_pair;
 		}
-
+		//first move check condition
 		if (col == 0 || (full_col > 0 && (max_col == 0 && max_uv == 0))) {
 			max_uv = max_pair.second;
 			max_col = col;
 			full_col = 0;
 		}
+
 		if (max_pair.second > max_uv) {
 			max_uv = max_pair.second;
 			max_col = col;
@@ -169,29 +173,163 @@ int Agent::get_free_pos(Puzzle puzzle, int col) {
 			return row;
 		}
 	}
-
 	return -1;
 }
 
 //alpha_beta returns the pair that holds the <col, utility_value> of the selected move
 std::pair<int, int> Agent::alpha_betha(Puzzle puzzle, int free_tiles, int alpha,
 		int beta) {
-	int col = 0, utility_value = 0;
-	return std::make_pair<int, int>(col, utility_value);
+
+	//integer to check the players turn
+	int choose_player = NUM_ROWS * NUM_COLS - free_tiles;
+
+	//pair to store the values
+	std::pair<int,int>result;
+
+	//max agent's turn
+	if(choose_player % 2 == 0){
+		result = max_alpha_betha(puzzle, free_tiles, ALPHABETA_MAX_DEPTH, alpha, beta);
+		std::cout << "Max Alpha Beta(col, utility): " << result.first << "," << result.second << std::endl;
+	}
+	else{
+		//min agent's turn
+		result = min_alpha_betha(puzzle, free_tiles, ALPHABETA_MAX_DEPTH, alpha, beta);
+		std::cout << "Max Alpha Beta(col, utility): " << result.first << "," << result.second << std::endl;
+	}
+
+	return result;
+
 }
 
-//max_value returns the pair that holds the <col, utility_value> of the selected move
+//max_value returns the pair that holds the <col, utility_value> of the selected move - MAX's turn
 std::pair<int, int> Agent::max_alpha_betha(Puzzle puzzle, int free_tiles,
 		int depth, int alpha, int beta) {
-	int col = 0, utility_value = 0;
-	return std::make_pair<int, int>(col, utility_value);
+
+	int utility_value = 0;
+
+	//stores the value of the child
+	std::pair<int,int> child_value;
+
+	//stores the best value
+	int best_value = alpha;
+
+	//stores the best column
+	int best_column;
+
+	//gets the current utility value
+	utility_value = utility(puzzle, free_tiles, "O");
+
+	//terminating conditions
+	//if the last node is reached, then terminate
+	//if there are no free tiles remaining, then terminate
+	//check for goal
+	if(free_tiles == 0 || depth == 0 || utility_value == 10000 || utility_value== -10000 ){
+		//gets the current utility value
+		utility_value = utility(puzzle, free_tiles, "X");
+		return std::make_pair<int, int>(0, utility_value);
+	}
+
+	for(int column_number = 0; column_number < NUM_COLS; column_number++){
+
+		//check the current puzzle if there is a free space
+		int free_row_position = get_free_pos(puzzle, column_number);
+
+		//checks for the free position in the row
+		if(free_row_position == -1)
+			continue;
+
+		//make the move and then check the utility
+		puzzle[free_row_position][column_number] = "X";
+
+		// the depth and the number of free tiles decrease
+		free_tiles  = free_tiles -1;
+		depth = depth -1;
+
+		//gets the <col,utility> value of the possible move in the column
+		child_value = min_alpha_betha(puzzle, free_tiles, depth, best_value, beta);
+
+		//assigns the best value to the variable "best_value" and stores the column
+		if(child_value.second > best_value){
+			best_value = child_value.second;
+			best_column = column_number;
+		}
+
+		if (beta <= best_value)
+			break;
+
+		//change the made move to default
+		puzzle[free_row_position][column_number] = ".";
+
+		// back to the normal depth and number of free tiles
+		free_tiles = free_tiles + 1;
+		depth = depth + 1;
+	}
+
+	return std::make_pair<int, int>(best_column, best_value);
 }
 
-//max_value returns the pair that holds the <col, utility_value> of the selected move
+//max_value returns the pair that holds the <col, utility_value> of the selected move - MIN's turn
 std::pair<int, int> Agent::min_alpha_betha(Puzzle puzzle, int free_tiles,
 		int depth, int alpha, int beta) {
-	int col = 0, utility_value = 0;
-	return std::make_pair<int, int>(col, utility_value);
+
+	int utility_value = 0;
+
+	//stores the value of the child
+	std::pair<int,int> child_value;
+
+	//stores the best value
+	int best_value = beta;
+
+	//stores the best column
+	int best_column;
+
+	//terminating conditions
+	//if the last node is reached, then terminate
+	//if there are no free tiles remaining, then terminate
+	//check for goal
+	if(free_tiles == 0 || depth == 0 || utility_value == 10000 || utility_value== -10000 ){
+		//gets the current utility value
+		utility_value = utility(puzzle, free_tiles, "X");
+		return std::make_pair<int, int>(0, utility_value);
+	}
+
+	for(int column_number = 0; column_number < NUM_COLS; column_number++){
+
+		//check the current puzzle if there is a free space
+		int free_row_position = get_free_pos(puzzle, column_number);
+
+		//checks for the free position in the row
+		if(free_row_position == -1)
+			continue;
+
+		//make the move and then check the utility
+		puzzle[free_row_position][column_number] = "O";
+
+		// the depth and the number of free tiles decrease
+		free_tiles  = free_tiles -1;
+		depth = depth -1;
+
+		//gets the <col,utility> value of the possible move in the column
+		child_value = max_alpha_betha(puzzle, free_tiles, depth, alpha, best_value);
+
+		//assigns the best value to the variable "best_value" and stores the column
+		if(child_value.second < best_value){
+			best_value = child_value.second;
+			best_column = column_number;
+		}
+
+		if (alpha >= best_value)
+			break;
+
+		//change the made move to default
+		puzzle[free_row_position][column_number] = ".";
+
+		// back to the normal depth and number of free tiles
+		free_tiles = free_tiles + 1;
+		depth = depth + 1;
+	}
+
+	return std::make_pair<int, int>(best_column, best_value);
 }
 
 /*
